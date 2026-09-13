@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CleanRank — Owner Dashboard</title>
+<meta name="description" content="Business-building progress tracker for CleanRank: leads, outreach, pipeline, revenue, and daily log.">
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M16 2C16 2 6.5 12.5 6.5 19a9.5 9.5 0 0 0 19 0C25.5 12.5 16 2 16 2Z' fill='%230B1F33'/%3E%3Cpolyline points='10,20.5 14,16.5 17,18.5 22,12.5' fill='none' stroke='%2300A3FF' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://api.fontshare.com">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700,900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400..700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+:root {
+  --navy: #0B1F33;
+  --bg: #081522;
+  --surface: #0F2438;
+  --surface-2: #132B42;
+  --border: #1E3A56;
+  --divider: #16304A;
+  --text: #E4EFF8;
+  --text-muted: #9DB8CE;
+  --text-faint: #64829C;
+  --accent: #00A3FF;
+  --good: #7FD4A8;
+  --font-display: 'Satoshi', 'Inter', 'Helvetica Neue', sans-serif;
+  --font-body: 'Inter', 'Helvetica Neue', sans-serif;
+  --radius-lg: 0.875rem;
+  --radius-md: 0.625rem;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
+body {
+  min-height: 100dvh;
+  font-family: var(--font-body);
+  font-size: 1rem; line-height: 1.6;
+  color: var(--text); background: var(--bg);
+}
+svg { display: block; }
+h1, h2, h3 { font-family: var(--font-display); line-height: 1.15; letter-spacing: -0.015em; }
+.num { font-variant-numeric: tabular-nums lining-nums; }
+
+.container { width: min(1160px, 100% - 2.5rem); margin-inline: auto; }
+
+/* Header */
+.topbar {
+  position: sticky; top: 0; z-index: 20;
+  background: rgba(8, 21, 34, 0.88);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--divider);
+}
+.topbar-inner {
+  display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;
+  padding-block: 0.85rem;
+}
+.brand {
+  display: inline-flex; align-items: center; gap: 0.6rem;
+  font-family: var(--font-display); font-weight: 700; font-size: 1.25rem;
+  color: var(--text);
+}
+.topbar .meta {
+  display: flex; gap: 1.25rem; flex-wrap: wrap; margin-left: auto;
+  font-size: 0.8125rem; color: var(--text-muted);
+}
+.day-badge {
+  display: inline-flex; align-items: center; gap: 0.45rem;
+  background: rgba(0, 163, 255, 0.12);
+  border: 1px solid rgba(0, 163, 255, 0.4);
+  color: var(--accent);
+  font-weight: 600; font-size: 0.8125rem;
+  padding: 0.3rem 0.8rem; border-radius: 9999px;
+  white-space: nowrap;
+}
+.day-badge .dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--accent);
+}
+
+/* Page */
+.page { padding-block: 2.5rem 4rem; display: grid; gap: 1.25rem; }
+.page-title {
+  font-size: clamp(1.5rem, 1.2rem + 1.25vw, 2.25rem);
+  font-weight: 900;
+}
+.page-sub { color: var(--text-muted); font-size: 0.9375rem; margin-top: 0.2rem; }
+
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+}
+.panel-head {
+  display: flex; align-items: baseline; justify-content: space-between;
+  gap: 1rem; flex-wrap: wrap; margin-bottom: 1.1rem;
+}
+.panel-head h2 { font-size: 1.0625rem; font-weight: 700; }
+.panel-head .sub { font-size: 0.8125rem; color: var(--text-faint); }
+
+/* KPI grid */
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 0.75rem;
+}
+.kpi {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 1.1rem 1.25rem;
+  display: grid; gap: 0.15rem;
+  align-content: start;
+}
+.kpi-label {
+  font-size: 0.75rem; font-weight: 600; letter-spacing: 0.08em;
+  text-transform: uppercase; color: var(--text-faint);
+}
+.kpi-value {
+  font-family: var(--font-display); font-weight: 900;
+  font-size: clamp(1.6rem, 1.2rem + 1vw, 2.1rem);
+  line-height: 1.1; letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums lining-nums;
+}
+.kpi-hint { font-size: 0.75rem; color: var(--text-faint); }
+
+/* Middle row: chart + funnel */
+.duo-grid {
+  display: grid; grid-template-columns: 1.4fr 1fr;
+  gap: 1.25rem;
+}
+.chart-wrap { position: relative; height: 300px; }
+
+.funnel-row {
+  display: grid; grid-template-columns: 6.5rem 1fr;
+  align-items: center; gap: 0.75rem;
+  padding-block: 0.55rem;
+}
+.funnel-stage {
+  font-size: 0.8125rem; font-weight: 600; color: var(--text-muted);
+}
+.funnel-bar-wrap {
+  position: relative;
+  background: var(--surface-2);
+  border-radius: 9999px;
+  height: 1.65rem;
+  overflow: hidden;
+}
+.funnel-bar {
+  position: absolute; inset: 0 auto 0 0;
+  background: linear-gradient(90deg, rgba(0, 163, 255, 0.45), var(--accent));
+  border-radius: 9999px;
+  min-width: 0.25rem;
+}
+.funnel-count {
+  position: relative; z-index: 1;
+  display: block; padding-left: 0.75rem; padding-top: 0.2rem;
+  font-size: 0.8125rem; font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
+}
+
+/* Leads table */
+.table-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
+thead th {
+  position: sticky; top: 0;
+  text-align: left; font-size: 0.75rem; font-weight: 600;
+  letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--text-faint);
+  padding: 0.5rem 0.9rem;
+  border-bottom: 1px solid var(--divider);
+  white-space: nowrap;
+}
+tbody td {
+  padding: 0.65rem 0.9rem;
+  border-bottom: 1px solid var(--divider);
+  white-space: nowrap;
+}
+tbody tr:last-child td { border-bottom: none; }
+tbody tr:hover td { background: var(--surface-2); }
+th.num, td.num { text-align: right; }
+
+/* Bottom row: log + actions */
+.bottom-grid {
+  display: grid; grid-template-columns: 1.4fr 1fr;
+  gap: 1.25rem;
+}
+.log-entry {
+  display: grid; grid-template-columns: 6.5rem 1fr; gap: 1rem;
+  padding-block: 0.7rem;
+  border-bottom: 1px solid var(--divider);
+}
+.log-entry:last-child { border-bottom: none; }
+.log-date {
+  font-size: 0.8125rem; font-weight: 600; color: var(--accent);
+  font-variant-numeric: tabular-nums;
+}
+.log-notes { font-size: 0.875rem; color: var(--text-muted); }
+
+.action-list { list-style: none; display: grid; gap: 0.7rem; }
+.action-list li {
+  display: flex; gap: 0.6rem; align-items: flex-start;
+  font-size: 0.9375rem;
+}
+.action-list svg { flex: none; margin-top: 0.28rem; color: var(--accent); }
+
+/* Empty states */
+.empty-state {
+  display: grid; place-content: center; gap: 0.3rem;
+  text-align: center;
+  padding: 2.25rem 1rem;
+  color: var(--text-muted); font-size: 0.9375rem;
+  background: var(--surface-2);
+  border: 1px dashed var(--border);
+  border-radius: var(--radius-md);
+}
+.empty-hint { font-size: 0.8125rem; color: var(--text-faint); }
+code {
+  font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+  font-size: 0.8125rem; background: var(--surface);
+  padding: 0.1rem 0.35rem; border-radius: 4px;
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+  .duo-grid, .bottom-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 560px) {
+  .topbar .meta .hide-sm { display: none; }
+  .funnel-row, .log-entry { grid-template-columns: 1fr; gap: 0.35rem; }
+}
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="container topbar-inner">
+    <span class="brand">
+      <svg width="26" height="26" viewBox="0 0 32 32" aria-hidden="true">
+        <path d="M16 2C16 2 6.5 12.5 6.5 19a9.5 9.5 0 0 0 19 0C25.5 12.5 16 2 16 2Z" fill="#E4EFF8"/>
+        <polyline points="10,20.5 14,16.5 17,18.5 22,12.5" fill="none" stroke="#00A3FF" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      CleanRank
+    </span>
+    <div class="meta">
+      <span class="day-badge"><span class="dot"></span>Day 2 since launch</span>
+      <span class="hide-sm">Pressure washing - Houston</span>
+    </div>
+  </div>
+</header>
+
+<main class="container page">
+  <div>
+    <h1 class="page-title">Business dashboard</h1>
+    <p class="page-sub">Launched 2026-09-12 &middot; Budget $100, $100 remaining</p>
+  </div>
+
+  <section aria-label="Key metrics">
+    <div class="kpi-grid">
+<div class="kpi"><span class="kpi-label">Leads</span><span class="kpi-value">40</span><span class="kpi-hint">Prospects found</span></div>
+<div class="kpi"><span class="kpi-label">Outreach sent</span><span class="kpi-value">0</span><span class="kpi-hint">Messages delivered</span></div>
+<div class="kpi"><span class="kpi-label">Replies</span><span class="kpi-value">0</span><span class="kpi-hint">Responses received</span></div>
+<div class="kpi"><span class="kpi-label">Deals won</span><span class="kpi-value">0</span><span class="kpi-hint">Paying customers</span></div>
+<div class="kpi"><span class="kpi-label">Revenue</span><span class="kpi-value">$0</span><span class="kpi-hint">Collected to date</span></div>
+<div class="kpi"><span class="kpi-label">Spend</span><span class="kpi-value">$0</span><span class="kpi-hint">Budget used</span></div>
+<div class="kpi"><span class="kpi-label">Profit</span><span class="kpi-value">$0</span><span class="kpi-hint">Revenue minus spend</span></div>
+    </div>
+  </section>
+
+  <div class="duo-grid">
+    <section class="panel" aria-label="Growth trend">
+      <div class="panel-head">
+        <h2>Leads &amp; outreach over time</h2>
+        <span class="sub">Cumulative</span>
+      </div>
+      <div class="chart-wrap">
+        <canvas id="trend-chart" role="img" aria-label="Line chart of cumulative leads and outreach over time"></canvas>
+      </div>
+    </section>
+
+    <section class="panel" aria-label="Pipeline funnel">
+      <div class="panel-head">
+        <h2>Pipeline</h2>
+        <span class="sub">New &rarr; Won</span>
+      </div>
+      <div class="funnel-row"><span class="funnel-stage">New</span><div class="funnel-bar-wrap"><div class="funnel-bar" style="width:82%"></div><span class="funnel-count">33</span></div></div>
+<div class="funnel-row"><span class="funnel-stage">Researched</span><div class="funnel-bar-wrap"><div class="funnel-bar" style="width:100%"></div><span class="funnel-count">40</span></div></div>
+<div class="funnel-row"><span class="funnel-stage">Audited</span><div class="funnel-bar-wrap"><div class="funnel-bar" style="width:5%"></div><span class="funnel-count">2</span></div></div>
+<div class="funnel-row"><span class="funnel-stage">Contacted</span><div class="funnel-bar-wrap"><div class="funnel-bar" style="width:2%"></div><span class="funnel-count">0</span></div></div>
+<div class="funnel-row"><span class="funnel-stage">Replied</span><div class="funnel-bar-wrap"><div class="funnel-bar" style="width:2%"></div><span class="funnel-count">0</span></div></div>
+<div class="funnel-row"><span class="funnel-stage">Won</span><div class="funnel-bar-wrap"><div class="funnel-bar" style="width:2%"></div><span class="funnel-count">0</span></div></div>
+    </section>
+  </div>
+
+  <section class="panel" aria-label="Top leads">
+    <div class="panel-head">
+      <h2>Top leads</h2>
+      <span class="sub">Top 10 by score</span>
+    </div>
+    <div class="table-wrap"><table><thead><tr><th>Score</th><th>Name</th><th>Area</th><th>Rating</th><th>Reviews</th><th>Website</th></tr></thead><tbody><tr><td class="num">97</td><td>A-1 Pressure Washing &amp; Painting</td><td>Spring/Humble</td><td class="num">5.0</td><td class="num">16</td><td>No website</td></tr><tr><td class="num">97</td><td>2nd Chance Roof Cleaning &amp; Power Washing</td><td>Atascocita</td><td class="num">5.0</td><td class="num">34</td><td>No website</td></tr><tr><td class="num">97</td><td>Niko&#x27;s Power Washing</td><td>Missouri City</td><td class="num">5.0</td><td class="num">38</td><td>No website</td></tr><tr><td class="num">95</td><td>Woodlands Power Washing</td><td>The Woodlands</td><td class="num">5.0</td><td class="num">15</td><td>Website live</td></tr><tr><td class="num">94</td><td>H2O Prime Pressure Washing</td><td>Tomball</td><td class="num">5.0</td><td class="num">10</td><td>Website live</td></tr><tr><td class="num">94</td><td>T &amp; S Power Washing</td><td>Atascocita</td><td class="num">5.0</td><td class="num">14</td><td>Website live</td></tr><tr><td class="num">94</td><td>Endless Pressure Washing &amp; Service LLC</td><td>Kingwood</td><td class="num">5.0</td><td class="num">36</td><td>Website live</td></tr><tr><td class="num">92</td><td>McCarthy Power Washing Services</td><td>Tomball/Magnolia</td><td class="num">4.9</td><td class="num">37</td><td>Website live</td></tr><tr><td class="num">90</td><td>#WASH &amp; STRIPE 713</td><td>Memorial</td><td class="num">5.0</td><td class="num">98</td><td>Website live</td></tr><tr><td class="num">88</td><td>Affordable Pressure Washing</td><td>Friendswood</td><td class="num">4.9</td><td class="num">15</td><td>Website live</td></tr></tbody></table></div>
+  </section>
+
+  <div class="bottom-grid">
+    <section class="panel" aria-label="Daily log">
+      <div class="panel-head">
+        <h2>Daily log</h2>
+        <span class="sub">Newest first</span>
+      </div>
+      <div class="log-entry"><span class="log-date">2026-09-12</span><p class="log-notes">Launch day: niche chosen (Houston pressure washing), 40 leads researched + scored, website &amp; dashboard built, first 5 outreach drafts + 2 audit PDFs ready</p></div>
+    </section>
+
+    <section class="panel" aria-label="Recommended actions">
+      <div class="panel-head">
+        <h2>Top recommended action</h2>
+      </div>
+      <ul class="action-list"><li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>User: approve the 5 outreach drafts in business/outreach/drafts_2026-09-12.md</li><li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>User: create PayPal account + buy cleanrank domain (~$12/yr) if you want the brand live</li><li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>Agent tomorrow: 5-10 new leads, 2 more audit PDFs, follow-ups</li></ul>
+    </section>
+  </div>
+</main>
+
+<script>
+const DATA = {"labels": ["2026-09-12"], "leads": [40], "outreach": [0]};
+const el = document.getElementById('trend-chart');
+if (DATA.labels.length === 0) {
+  el.replaceWith(Object.assign(document.createElement('div'),
+    {className: 'empty-state', innerHTML: '<p>No activity recorded yet.</p>'}));
+} else {
+  new Chart(el, {
+    type: 'line',
+    data: {
+      labels: DATA.labels,
+      datasets: [
+        {
+          label: 'Cumulative leads',
+          data: DATA.leads,
+          borderColor: '#00A3FF',
+          backgroundColor: 'rgba(0, 163, 255, 0.12)',
+          fill: true,
+          tension: 0.35,
+          pointRadius: 3,
+          pointBackgroundColor: '#00A3FF',
+        },
+        {
+          label: 'Cumulative outreach',
+          data: DATA.outreach,
+          borderColor: '#7FD4A8',
+          backgroundColor: 'transparent',
+          borderDash: [5, 4],
+          tension: 0.35,
+          pointRadius: 3,
+          pointBackgroundColor: '#7FD4A8',
+        },
+      ],
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: { labels: { color: '#9DB8CE', usePointStyle: true, boxWidth: 7 } },
+      },
+      scales: {
+        x: {
+          ticks: { color: '#9DB8CE', maxTicksLimit: 8 },
+          grid: { color: 'rgba(157, 184, 206, 0.08)' },
+        },
+        y: {
+          beginAtZero: true,
+          ticks: { color: '#9DB8CE', precision: 0 },
+          grid: { color: 'rgba(157, 184, 206, 0.08)' },
+        },
+      },
+    },
+  });
+}
+
+</script>
+<script data-pplx-inline-edit>
+(function () {
+  if (window === window.top) return;
+
+  const allowedParentOrigins = ["https://www.perplexity.ai","https://perplexity.ai","https://testing.perplexity.ai","https://staging.perplexity.ai","https://*.preview.i.perplexity.ai","http://perplexity.localhost","http://localhost:1420","http://127.0.0.1:1420","http://localhost:3000","http://127.0.0.1:3000","http://localhost:5173","http://127.0.0.1:5173"];
+  const MAX_FONT_BYTES = 500 * 1024;
+  const MAX_TOTAL_FONT_BYTES = 2 * 1024 * 1024;
+  let scrollForwarding = false;
+  let scrollRaf = 0;
+  let trustedTopOrigin = null;
+
+  // Allow entries like "https://*.preview.i.perplexity.ai" — the wildcard
+  // matches a single DNS label (no dots), so "https://*.foo" cannot stretch
+  // across multiple labels.
+  function matchesAllowedOrigin(origin) {
+    if (!origin) return false;
+    for (const entry of allowedParentOrigins) {
+      if (!entry.includes("*")) {
+        if (entry === origin) return true;
+        continue;
+      }
+      const pattern = new RegExp(
+        "^" +
+          entry.replace(/[.+?^${}()|[\]\\]/g, "\\$&").replace(/\*/g, "[^.]+") +
+          "$",
+      );
+      if (pattern.test(origin)) return true;
+    }
+    return false;
+  }
+
+  // Trust decision: when the sender is same-origin-visible (event.origin is a
+  // real origin like https://www.perplexity.ai) we trust event.origin directly.
+  // When event.origin is "null" (opaque broker srcdoc), we fall back to the
+  // broker's stamped `parentOrigin` to identify the top window. The fallback
+  // is claim-only — we rely on the browser's native `targetOrigin` enforcement
+  // on the response path (see postToTrustedTop) to ensure replies can't be
+  // delivered to anyone but the actual top window of that claimed origin.
+  function getTrustedParentOrigin(event) {
+    const forwardedParentOrigin =
+      typeof event.data.parentOrigin === "string" ? event.data.parentOrigin : null;
+    const parentOrigin = event.origin === "null" ? forwardedParentOrigin : event.origin;
+    return matchesAllowedOrigin(parentOrigin) ? parentOrigin : null;
+  }
+
+  // All responses go to window.top with targetOrigin = the allowlisted origin.
+  // An attacker that iframes us inside their own null-origin broker can claim
+  // any parentOrigin they like, but the browser will drop the reply whenever
+  // the real top's origin doesn't match — so the screenshot never leaves.
+  function postToTrustedTop(message) {
+    if (!trustedTopOrigin) return;
+    try {
+      window.top.postMessage(message, trustedTopOrigin);
+    } catch (_error) {}
+  }
+
+  function inlineAll(original, clone) {
+    if (original.nodeType !== 1 || clone.nodeType !== 1) return;
+
+    try {
+      const computedStyle = getComputedStyle(original);
+      // cssText on a computed style is the serialized declaration in modern
+      // Chromium/Safari — a single read beats enumerating ~400 longhand
+      // properties. Firefox returns "" here, so we fall back on empty.
+      const serialized = computedStyle.cssText;
+      if (serialized) {
+        clone.style.cssText = serialized;
+      } else {
+        const parts = new Array(computedStyle.length);
+        for (let index = 0; index < computedStyle.length; index += 1) {
+          const property = computedStyle[index];
+          parts[index] = `${property}:${computedStyle.getPropertyValue(property)};`;
+        }
+        clone.style.cssText = parts.join("");
+      }
+    } catch (_error) {}
+
+    const originalChildren = original.children;
+    const clonedChildren = clone.children;
+    for (
+      let index = 0;
+      index < originalChildren.length && index < clonedChildren.length;
+      index += 1
+    ) {
+      inlineAll(originalChildren[index], clonedChildren[index]);
+    }
+  }
+
+  function extractFontUrl(srcValue) {
+    const matches = [
+      ...srcValue.matchAll(
+        /url\(["']?([^"')]+)["']?\)(?:\s*format\(["']?([^"')]+)["']?\))?/gi,
+      ),
+    ];
+    if (matches.length === 0) return null;
+    const woff2 = matches.find((m) => m[2] && m[2].toLowerCase().includes("woff2"));
+    if (woff2) return woff2[1];
+    const woff = matches.find((m) => m[2] && m[2].toLowerCase().includes("woff"));
+    if (woff) return woff[1];
+    return matches[0][1];
+  }
+
+  // Cache resolved font URL -> data URI across captures. Fonts on a page
+  // essentially never change, and a batch run emits multiple captures back to
+  // back — without this we'd refetch + re-base64 every time.
+  const fontDataUriCache = new Map();
+  const SRC_DECLARATION_RE = /src\s*:\s*[^;}]+/i;
+
+  async function fetchAsDataUri(url) {
+    if (fontDataUriCache.has(url)) return fontDataUriCache.get(url);
+    let dataUri = null;
+    try {
+      const response = await fetch(url, { mode: "cors", credentials: "omit" });
+      if (response.ok) {
+        const blob = await response.blob();
+        if (blob.size <= MAX_FONT_BYTES) {
+          dataUri = await new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.onloadend = () =>
+              resolve(typeof reader.result === "string" ? reader.result : null);
+            reader.onerror = () => resolve(null);
+            reader.readAsDataURL(blob);
+          });
+        }
+      }
+    } catch (_error) {
+      dataUri = null;
+    }
+    fontDataUriCache.set(url, dataUri);
+    return dataUri;
+  }
+
+  function collectFontFaceRuleTexts() {
+    const rules = [];
+    for (const sheet of document.styleSheets) {
+      let cssRules;
+      try {
+        cssRules = sheet.cssRules;
+      } catch (_error) {
+        continue;
+      }
+      if (!cssRules) continue;
+      for (const rule of cssRules) {
+        const cssText = rule.cssText || "";
+        if (cssText.startsWith("@font-face")) rules.push(cssText);
+      }
+    }
+    return rules;
+  }
+
+  async function buildInlinedFontCss() {
+    const ruleTexts = collectFontFaceRuleTexts();
+    if (ruleTexts.length === 0) return null;
+
+    const resolved = ruleTexts.map((cssText) => {
+      if (!SRC_DECLARATION_RE.test(cssText)) return null;
+      const srcMatch = cssText.match(/src\s*:\s*([^;}]+)[;}]/i);
+      if (!srcMatch) return null;
+      const url = extractFontUrl(srcMatch[1]);
+      if (!url) return null;
+      try {
+        return { cssText, url: new URL(url, document.baseURI).href };
+      } catch (_error) {
+        return null;
+      }
+    });
+
+    const dataUris = await Promise.all(
+      resolved.map((entry) => (entry ? fetchAsDataUri(entry.url) : Promise.resolve(null))),
+    );
+
+    const inlined = [];
+    let totalBytes = 0;
+    for (let index = 0; index < resolved.length; index += 1) {
+      const entry = resolved[index];
+      const dataUri = dataUris[index];
+      if (!entry || !dataUri) continue;
+      const approxBytes = dataUri.length * 0.75;
+      if (totalBytes + approxBytes > MAX_TOTAL_FONT_BYTES) break;
+      totalBytes += approxBytes;
+      inlined.push(entry.cssText.replace(SRC_DECLARATION_RE, `src: url("${dataUri}")`));
+    }
+    return inlined.length > 0 ? inlined.join("\n") : null;
+  }
+
+  function stripExternal(clone) {
+    const images = clone.querySelectorAll("img");
+    for (let index = 0; index < images.length; index += 1) {
+      const src = images[index].getAttribute("src");
+      if (src && !src.startsWith("data:")) images[index].removeAttribute("src");
+    }
+
+    const elements = clone.querySelectorAll("*");
+    for (let index = 0; index < elements.length; index += 1) {
+      const style = elements[index].style.cssText;
+      if (style && style.includes("url(")) {
+        elements[index].style.cssText = style.replace(
+          /url\(["']?(?!data:)[^)"']*["']?\)/gi,
+          "none",
+        );
+      }
+    }
+  }
+
+  function emitScroll() {
+    scrollRaf = 0;
+    if (!scrollForwarding) return;
+    postToTrustedTop({
+      type: "INLINE_EDIT_SCROLL",
+      scrollX: window.scrollX,
+      scrollY: window.scrollY,
+    });
+  }
+
+  window.addEventListener(
+    "scroll",
+    function () {
+      if (!scrollForwarding || scrollRaf) return;
+      scrollRaf = requestAnimationFrame(emitScroll);
+    },
+    { passive: true, capture: true },
+  );
+
+  async function handleCaptureRequest(event) {
+    const requestId = event.data.requestId;
+    const scrollX = window.scrollX;
+    const scrollY = window.scrollY;
+    const width = window.innerWidth;
+    const height = window.innerHeight;
+
+    function postResult(dataUrl) {
+      postToTrustedTop({
+        type: "INLINE_EDIT_SCREENSHOT_RESULT",
+        requestId,
+        dataUrl,
+        scrollX,
+        scrollY,
+      });
+    }
+
+    try {
+      // Wait for any pending web fonts to resolve so both inline metrics and
+      // the @font-face inlining below see the same loaded faces.
+      if (document.fonts && document.fonts.ready) {
+        try {
+          await document.fonts.ready;
+        } catch (_error) {}
+      }
+
+      const clone = document.documentElement.cloneNode(true);
+      inlineAll(document.documentElement, clone);
+
+      const removedNodes = clone.querySelectorAll("script,link[rel=\"stylesheet\"],style");
+      for (let index = 0; index < removedNodes.length; index += 1) {
+        removedNodes[index].remove();
+      }
+
+      stripExternal(clone);
+
+      // Re-embed web fonts as data-URI @font-face rules so the SVG rasterizer
+      // can resolve them — external font URLs aren't fetched during
+      // foreignObject rendering, which would otherwise force a fallback face
+      // and change text metrics.
+      const inlinedFontCss = await buildInlinedFontCss();
+      if (inlinedFontCss) {
+        const styleEl = document.createElement("style");
+        styleEl.textContent = inlinedFontCss;
+        const head = clone.querySelector("head");
+        if (head) head.appendChild(styleEl);
+        else clone.insertBefore(styleEl, clone.firstChild);
+      }
+
+      const html = new XMLSerializer().serializeToString(clone);
+      const svg =
+        `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}">` +
+        '<foreignObject width="100%" height="100%">' +
+        `<div xmlns="http://www.w3.org/1999/xhtml" style="width:${width}px;height:${height}px;overflow:hidden">` +
+        `<div style="position:relative;left:-${scrollX}px;top:-${scrollY}px">` +
+        html +
+        "</div></div></foreignObject></svg>";
+      const svgUrl = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
+      const image = new Image();
+      image.onload = function () {
+        const canvas = document.createElement("canvas");
+        canvas.width = width;
+        canvas.height = height;
+        canvas.getContext("2d").drawImage(image, 0, 0);
+        postResult(canvas.toDataURL("image/png"));
+      };
+      image.onerror = function () {
+        postResult(null);
+      };
+      image.src = svgUrl;
+    } catch (_error) {
+      postResult(null);
+    }
+  }
+
+  window.addEventListener("message", function (event) {
+    if (!event.data) return;
+    // Only accept messages from the direct parent frame. Blocks sibling /
+    // unrelated-window postMessage senders that could otherwise reach us.
+    if (event.source !== window.parent) return;
+
+    const trustedParentOrigin = getTrustedParentOrigin(event);
+    if (!trustedParentOrigin) return;
+    trustedTopOrigin = trustedParentOrigin;
+
+    if (event.data.type === "INLINE_EDIT_SCROLL_START") {
+      scrollForwarding = true;
+      emitScroll();
+      return;
+    }
+
+    if (event.data.type === "INLINE_EDIT_SCROLL_STOP") {
+      scrollForwarding = false;
+      if (scrollRaf) cancelAnimationFrame(scrollRaf);
+      scrollRaf = 0;
+      return;
+    }
+
+    if (event.data.type !== "INLINE_EDIT_CAPTURE_REQUEST") return;
+
+    handleCaptureRequest(event);
+  });
+})();
+
+
+</script></body>
+</html>
